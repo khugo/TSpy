@@ -1,6 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, jsonify
 from flask.ext.triangle import Triangle
+from flask.ext.sqlalchemy import SQLAlchemy
 from contextlib import closing
 import config
 import json
@@ -8,6 +9,9 @@ import json
 app = Flask(__name__)
 app.config.from_object(config)
 Triangle(app)
+db = SQLAlchemy(app)
+
+from models import Message
 
 def init_db():
     with closing(connect_db()) as db:
