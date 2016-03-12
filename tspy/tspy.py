@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask.ext.triangle import Triangle
 from flask.ext.sqlalchemy import SQLAlchemy
 from contextlib import closing
@@ -11,16 +11,8 @@ app.config.from_object(config)
 Triangle(app)
 db = SQLAlchemy(app)
 
-from models import Message
-
-def init_db():
-    with closing(connect_db()) as db:
-        with app.open_resource("schema.sql", mode="r") as f:
-            db.cursor().executescript(f.read())
-        db.commit()
-
-def connect_db():
-    return sqlite3.connect(app.config["DATABASE"])
+import commands
+from models import *
 
 @app.route("/")
 def index():
@@ -28,22 +20,16 @@ def index():
 
 @app.route("/api/messages", methods=["GET"])
 def get_messages():
-	return json.dumps([
-		{
-			"age": 13,
-			"id": "asdasd",
-			"name": "wadwad"
-		},
-		{
-			"age": 13,
-			"id": "ASDASDASD",
-			"name": "AWSDAWD"
-		}
-	])
+    return json.dumps([x.as_dict() for x in Message.query.all()])
+
+@app.route("/api/command", methods=["POST"])
+def handle_command():
+    commands.handle_command(request.form["command"], "")
+    return request.form["command"]
 
 @app.route("/partials/<name>")
 def get_partial(name):
-	return render_template(name)
+    return render_template(name)
 
 if __name__ == "__main__":
     app.run()
