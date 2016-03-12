@@ -1,5 +1,6 @@
 tspy/config.py
 tspy/node_modules
 virtualenv/
+__pycache__/
 *.pyc
 *~
