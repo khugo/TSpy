@@ -7,7 +7,7 @@ def decode_ts_text(text):
 	text = text.replace("\s", " ")
 	text = text.replace("\\/", "/")
 	text = text.replace("\p", "|")
-	text = codecs.decode(text, "unicode_decode")
+	text = codecs.decode(text, "unicode_escape")
 	return text
 
 def parse_header(bytes):
