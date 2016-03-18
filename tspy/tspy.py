@@ -28,7 +28,7 @@ def handle_command():
     print("Got header " + header_str)
     header_bytes = []
     for byte in header_str.split(" "):
-        header_bytes.append(int(byte).to_bytes(1, byteorder="small"))
+        header_bytes.append(int(byte).to_bytes(1, byteorder="little"))
     commands.handle_command(request.form["command"], header_bytes)
     return request.form["command"]
 

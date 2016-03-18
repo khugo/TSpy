@@ -16,6 +16,7 @@ def parse_header(bytes):
 			"clid": int.from_bytes(bytes[11], "little"),
 			"packet_type": int.from_bytes(bytes[12], "little")
 		}
+		return header
 	except IndexError:
 		raise InvalidHeaderError("Header out of range: " + bytes)
 
@@ -31,7 +32,7 @@ def handle_message(command, header):
 	TARGETMODE_CLIENT = 1
 	try:
 		targetmode = int(re.search("targetmode=([1-3])", command).groups(1)[0])
-		msg = decode_ts_text(re.search("msg=(.*)", command).groups(1)[0])
+		msg = decode_ts_text(re.search("msg=([^\s]+)", command).groups(1)[0])
 		target = None
 		if targetmode == TARGETMODE_CLIENT:
 			target = int(re.search("target=([0-9]+)", command).groups(1)[0])
