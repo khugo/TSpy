@@ -16,7 +16,7 @@ from models import *
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("base.html")
 
 @app.route("/api/messages", methods=["GET"])
 def get_messages():

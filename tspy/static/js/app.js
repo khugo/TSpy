@@ -11,6 +11,6 @@ tspyApp.config(['$routeProvider',
 				controller: 'MessagesCtrl'
 			}).
 			otherwise({
-				redirectTo: '/'
-			});
+				templateUrl: 'partials/index.html'
+			})
 }]);
