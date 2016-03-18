@@ -11,9 +11,6 @@ def decode_ts_text(text):
 	return text
 
 def parse_header(bytes):
-	return {
-		"clid": 15
-	}
 	try:
 		header = {
 			"clid": int.from_bytes(bytes[11], "little"),
