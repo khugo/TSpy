@@ -1,6 +1,14 @@
 import re
+import codecs
 from tspy import db
 from models import *
+
+def decode_ts_text(text):
+	text = text.replace("\s", " ")
+	text = text.replace("\\/", "/")
+	text = text.replace("\p", "|")
+	text = codecs.decode(text, "unicode_decode")
+	return text
 
 def parse_header(bytes):
 	return {
@@ -26,7 +34,7 @@ def handle_message(command, header):
 	TARGETMODE_CLIENT = 1
 	try:
 		targetmode = int(re.search("targetmode=([1-3])", command).groups(1)[0])
-		msg = re.search("msg=(.*)", command).groups(1)[0]
+		msg = decode_ts_text(re.search("msg=(.*)", command).groups(1)[0])
 		target = None
 		if targetmode == TARGETMODE_CLIENT:
 			target = int(re.search("target=([0-9]+)", command).groups(1)[0])
