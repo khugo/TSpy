@@ -10,6 +10,9 @@ tspyApp.config(['$routeProvider',
 				templateUrl: 'partials/messages.html',
 				controller: 'MessagesCtrl'
 			}).
+			when('/', {
+				templateUrl: 'partials/index.html'
+			}).
 			otherwise({
 				templateUrl: 'partials/index.html'
 			})

@@ -28,7 +28,7 @@ def handle_message(command, header):
 		targetmode = int(re.search("targetmode=([1-3])", command).groups(1)[0])
 		msg = re.search("msg=(.*)", command).groups(1)[0]
 		target = None
-		if targetmode == TARGETMODE_CLIENT or targetmode == TARGETMODE_CHANNEL:
+		if targetmode == TARGETMODE_CLIENT:
 			target = int(re.search("target=([0-9]+)", command).groups(1)[0])
 		sender = header["clid"]
 		print(sender, msg, targetmode, target)

@@ -20,7 +20,7 @@ def index():
 
 @app.route("/api/messages", methods=["GET"])
 def get_messages():
-    return json.dumps([x.as_dict() for x in Message.query.all()])
+    return json.dumps([x.as_dict() for x in Message.query.order_by("date desc")])
 
 @app.route("/api/command", methods=["POST"])
 def handle_command():
