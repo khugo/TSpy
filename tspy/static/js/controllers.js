@@ -10,12 +10,12 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", function ($scope,
 			case 3:
 				return "SERVER";
 			default:
-				return "UNKNOWN";
+				return "UNKNOWN (" + mode + ")";
 		}
 	}
 	function update() {
 		console.log("update");
-		$http.get("api/messages").success(function (data) {
+		$http.get("api/inspect/messages").success(function (data) {
 			var messages = data.map(function (x) {
 				return {
 					date: x.date,
@@ -37,7 +37,7 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", function ($scope,
 	var shouldUpdate = true;
 	$scope.$on("$routeChangeStart", function () {
 		shouldUpdate = false;
-	})
+	});
 	update();
 }]);
 tspyControllers.controller('NavbarCtrl', ["$location", "$scope", function ($location, $scope) {
@@ -47,4 +47,68 @@ tspyControllers.controller('NavbarCtrl', ["$location", "$scope", function ($loca
 		else
         	return $location.path().indexOf(viewLocation) == 0;
     };
+}]);
+tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $http) {
+	function updateQueue() {
+		var completedTasks = 0;
+		$http.get("api/inspect/queue").success(function (data) {
+			var commands = data.map(function (x) {
+				return {
+					id: x.id,
+					command: x.command,
+					header: x.header,
+					extra: x.extra
+				}
+			});
+			console.log(commands);
+			$scope.queue = commands;
+			completedTasks++;
+			if (completedTasks == 2 && shouldUpdate)
+				setTimeout(function () {
+					updateQueue();
+				}, 1000);
+		});
+		$http.get("api/inspect/queue/completed").success(function (data) {
+			var commands = data.map(function (x) {
+				return {
+					id: x.id,
+					command: x.command,
+					header: x.header,
+					extra: x.extra
+				}
+			});
+			console.log(commands);
+			$scope.completed_commands = commands;
+			completedTasks++;
+			if (completedTasks == 2 && shouldUpdate)
+				setTimeout(function () {
+					updateQueue();
+				}, 1000);
+		});
+	}
+	var shouldUpdate = true;
+	$scope.$on("$routeChangeStart", function () {
+		shouldUpdate = false;
+	});
+	$scope.submit = function () {
+		console.log($.param($scope.formData));
+		$http({
+			method: "POST",
+			url: "api/queue",
+			data: $.param($scope.formData),
+			headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  
+		}).success(function () {
+			$scope.formData = {};
+		});
+	}
+	$scope.removeFromQueue = function (id) {
+		console.log($.param({id:id}))
+		$http({
+			method: "POST",
+			url: "api/queue/delete",
+			data: "id=" + id,
+			headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  
+		})
+	}
+	updateQueue();
 }]);

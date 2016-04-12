@@ -1,4 +1,9 @@
 .main-content {
   margin-top: 60px; }
 
+.queue .queue-form {
+  margin-bottom: 50px; }
+.queue .queue-table .button-column span {
+  cursor: pointer; }
+
 /*# sourceMappingURL=styles.css.map */

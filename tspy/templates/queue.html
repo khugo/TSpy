@@ -1,0 +1,58 @@
+<div class="queue">
+  <div class="row">
+    <h1>Add a new command to queue</h1>
+    <form class="queue-form" ng-submit="submit()">
+      <div class="form-group">
+          <label>Command (Max 1024 chars)</label>
+          <input type="text" class="form-control" placeholder="sendtextmessage targetmode=2 msg=example" ng-model="formData.command"/>
+      </div>
+      <div class="form-group">
+          <label>Header (Hex bytes seperated by spaces, ?? to copy byte from packet header)</label>
+          <input type="text" class="form-control" placeholder="D3 A1 09 11 FF 66 ?? ?? ?? A1 D6 F1 B3" ng-model="formData.header"/>
+      </div>
+      <div class="form-group">
+          <label>Extra content (JSON)</label>
+          <input type="text" class="form-control" placeholder='{ "code": 15 }' ng-model="formData.extra"/>
+      </div>
+      <button class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+  <div class="row">
+    <h2>Current queue</h2>
+    <table class="table table-striped queue-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ID</th>
+          <th>Command</th>
+          <th>Header</th>
+          <th>Extra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="command in queue">
+          <td class="button-column"><span class="glyphicon glyphicon-remove" ng-click="removeFromQueue(command.id)"></span></td>
+          <td ng-repeat="(key, val) in command">{{val | angular}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="row">
+    <h2>Completed commands</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Command</th>
+          <th>Header</th>
+          <th>Extra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="command in completed_commands">
+          <td ng-repeat="(key, val) in command">{{val | angular}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

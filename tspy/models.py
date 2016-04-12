@@ -41,3 +41,27 @@ class Message(db.Model):
         d = {c.name: getattr(self, c.name) for c in self.__table__.columns}
         d["date"] = d["date"].strftime("%Y-%m-%d %H:%M:%S")
         return d
+
+class QueuedCommand(db.Model):
+    __tablename__ = "queued_commands"
+    id = db.Column(db.Integer, primary_key=True)
+    #Header contains 13 hex bytes in format:
+    #"D3 A1 09 11 FF 66 ?? ?? ?? A1 D6 F1 B3"
+    #?? = byte should be copied from the original packet
+    header = db.Column(db.String(38))
+    command = db.Column(db.String(1025))
+    extra = db.Column(db.String(1000))
+    completed = db.Column(db.Boolean())
+
+    def __init__ (self, command, header="", extra=""):
+        self.command = command
+        self.extra = extra
+        if header == "":
+            self.header = " ".join(["??" for x in range(0, 13)])
+        else:
+            self.header = header
+        self.completed = False
+
+    def as_dict(self):
+        d = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return d
