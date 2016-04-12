@@ -29,7 +29,7 @@ def get_queue():
 
 @app.route("/api/inspect/queue/completed", methods=["GET"])
 def get_completed_queue():
-    return json.dumps([x.as_dict() for x in QueuedCommand.query.filter_by(completed=True).order_by("id").limit(50)])
+    return json.dumps([x.as_dict() for x in QueuedCommand.query.filter_by(completed=True).order_by("-id").limit(50)])
 
 @app.route("/api/command", methods=["POST"])
 def handle_command():
