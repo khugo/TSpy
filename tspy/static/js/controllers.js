@@ -110,5 +110,22 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 			headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  
 		})
 	}
+	$scope.applyPreset = function (preset) {
+		switch (preset) {
+			case "poke":
+				$scope.formData = {
+					command: "clientpoke clid=2 msg=template return_code=1:18",
+					header: "?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 01 23",
+					extra: ""
+				}
+				break;
+			case "server_chat":
+				$scope.formData = {
+					command: "sendtextmessage targetmode=3 msg=template",
+					header: "?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??",
+					extra: ""
+				}
+		}
+	}
 	updateQueue();
 }]);

@@ -1,6 +1,11 @@
 <div class="queue">
   <div class="row">
     <h1>Add a new command to queue</h1>
+    <div class="presets">
+      <h4>Templates</h4>
+      <button class="btn btn-default" ng-click="applyPreset('poke')">Poke 1->2</button>
+      <button class="btn btn-default" ng-click="applyPreset('server_chat')">Server chat</button>
+    </div>
     <form class="queue-form" ng-submit="submit()">
       <div class="form-group">
           <label>Command (Max 1024 chars)</label>

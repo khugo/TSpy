@@ -5,5 +5,11 @@
   margin-bottom: 50px; }
 .queue .queue-table .button-column span {
   cursor: pointer; }
+.queue .presets {
+  margin: 10px 0 10px 0; }
+  .queue .presets h4 {
+    margin-bottom: 5px; }
+  .queue .presets button {
+    margin-right: 5px; }
 
 /*# sourceMappingURL=styles.css.map */
