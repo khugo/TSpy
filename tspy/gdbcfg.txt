@@ -1,0 +1,9 @@
+set pagination off
+source ../script.py
+file ts3server_linux_x86
+ow
+run
+focus cmd
+set disassembly intel
+layout asm
+layout regs
