@@ -3,21 +3,25 @@ var tspyApp = angular.module('tspyApp', [
   'tspyControllers'
 ]);
 
+var applySecret = function (url) {
+	return url + "?secret=" + localStorage.getItem("secret");
+}
+
 tspyApp.config(['$routeProvider',
 	function($routeProvider) {
 		$routeProvider.
 			when('/messages', {
-				templateUrl: 'partials/messages.html',
+				templateUrl: applySecret('partials/messages.html'),
 				controller: 'MessagesCtrl'
 			}).
 			when('/queue', {
-				templateUrl: 'partials/queue.html',
+				templateUrl: applySecret('partials/queue.html'),
 				controller: 'QueueCtrl'
 			}).
 			when('/', {
-				templateUrl: 'partials/index.html'
+				templateUrl: applySecret('partials/index.html'),
 			}).
 			otherwise({
-				templateUrl: 'partials/index.html'
+				templateUrl: applySecret('partials/index.html')
 			})
 }]);
