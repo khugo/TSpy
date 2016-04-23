@@ -2,6 +2,7 @@ import gdb
 import re
 import threading
 import json
+import traceback
 from urllib.request import urlopen
 from urllib.parse import urlencode
 
@@ -9,6 +10,7 @@ DECRYPTED_PACKETS_BREAKPOINT = "*0x08238C2D"
 INBOUND_PACKETS_OUTPUT = "../inbound_packets.txt"
 #What the sendtextmessage packet's message should contain for it to be replaced
 TRIGGER_PACKET_CONTENT = "tspy"
+ACCESS_PASSWORD = "password"
 
 def to_uint(x):
     return x & 0xffffffff
@@ -51,7 +53,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
 
     """
     def get_action_from_server(self):
-        url = "http://localhost:5000/api/queue"
+        url = "http://localhost:5000/api/queue?secret=" + ACCESS_PASSWORD
         json_data = json.loads(urlopen(url).read().decode("utf-8"))
         print(json.dumps(json_data))
         return json_data
@@ -103,32 +105,37 @@ class TSpyBreakpoint(gdb.Breakpoint):
         Entry point.
     """
     def stop(self):
-        self.inferior = gdb.selected_inferior()
-        data_ptr_addr = to_uint(int(gdb.parse_and_eval("$esi+4")))
-        #data_addr + 13 = start of command message
-        self.data_addr = int.from_bytes(self.inferior.read_memory(data_ptr_addr, 4), "little")
-        self.data_size_addr = to_uint(int(gdb.parse_and_eval("$esi+8")))
-        if self.read_size() > 0:
-            command = self.read_command()
-            if command.startswith("sendtextmessage"):
-                msg = re.search("msg=(.*)", command)
-                print(command)
-                if not msg:
-                    return
-                #If this is a special packet, get what the server wants to do and replace memory accordingly
-                if msg.group(1) == TRIGGER_PACKET_CONTENT:
-                    server_action = self.get_action_from_server()
-                    if server_action["command"] != "":
-                        self.apply_server_action(server_action)
-                        self.print_header()
-                #Utility for debugging, writes invokers client id to channel chat.
-                elif msg.group(1) == "clid":
-                    new_command = "sendtextmessage targetmode=2 msg=" + str(int.from_bytes(self.inferior.read_memory(self.data_addr+11, 1), "little"))
-                    self.set_command(new_command)
-                    self.set_size(len(new_command)+13)
-                else:
-                    data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                    threading.Thread(target=urlopen, args=("http://localhost:5000/api/command", data)).start()
+        try:
+            self.inferior = gdb.selected_inferior()
+            data_ptr_addr = to_uint(int(gdb.parse_and_eval("$esi+4")))
+            #data_addr + 13 = start of command message
+            self.data_addr = int.from_bytes(self.inferior.read_memory(data_ptr_addr, 4), "little")
+            self.data_size_addr = to_uint(int(gdb.parse_and_eval("$esi+8")))
+            if self.read_size() > 0:
+                command = self.read_command()
+                if command.startswith("sendtextmessage"):
+                    msg = re.search("msg=(.*)", command)
+                    print(command)
+                    if not msg:
+                        return
+                    #If this is a special packet, get what the server wants to do and replace memory accordingly
+                    if msg.group(1) == TRIGGER_PACKET_CONTENT:
+                        server_action = self.get_action_from_server()
+                        if server_action["command"] != "":
+                            self.apply_server_action(server_action)
+                            self.print_header()
+                    #Utility for debugging, writes invokers client id to channel chat.
+                    elif msg.group(1) == "clid":
+                        new_command = "sendtextmessage targetmode=2 msg=" + str(int.from_bytes(self.inferior.read_memory(self.data_addr+11, 1), "little"))
+                        self.set_command(new_command)
+                        self.set_size(len(new_command)+13)
+                    else:
+                        data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
+                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + ACCESS_PASSWORD, data)).start()
+        except Exception as e:
+            traceback.print_exc()
+            data = urlencode({"error_msg": str(e), "exception": type(e).__name__, "traceback": traceback.format_exc()}).encode("utf-8")
+            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + ACCESS_PASSWORD, data)).start()
 
 class LogInboundPackets(gdb.Command):
     def __init__ (self):
@@ -150,5 +157,4 @@ class TSpy(gdb.Command):
         """)
         print("Overwriting commands at " + DECRYPTED_PACKETS_BREAKPOINT)
 
-#LogInboundPackets()
 TSpy()

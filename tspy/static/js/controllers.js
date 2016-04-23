@@ -60,7 +60,6 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 					extra: x.extra
 				}
 			});
-			console.log(commands);
 			$scope.queue = commands;
 			completedTasks++;
 			if (completedTasks == 2 && shouldUpdate)
@@ -77,7 +76,6 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 					extra: x.extra
 				}
 			});
-			console.log(commands);
 			$scope.completed_commands = commands;
 			completedTasks++;
 			if (completedTasks == 2 && shouldUpdate)
@@ -128,4 +126,29 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 		}
 	}
 	updateQueue();
+}]);
+
+tspyControllers.controller('ErrorsCtrl', ["$scope", "$http", function ($scope, $http) {
+	function updateErrors() {
+		$http.get("api/inspect/errors?secret=" + localStorage.getItem("secret")).success(function (data) {
+			var errors = data.map(function (x) {
+				return {
+					date: x.date,
+					error_msg: x.error_msg,
+					exception: x.exception,
+					traceback: x.traceback
+				}
+			});
+			$scope.errors = errors;
+			if (shouldUpdate)
+				setTimeout(function () {
+					updateErrors();
+				}, 5000);
+		});
+	}
+	var shouldUpdate = true;
+	$scope.$on("$routeChangeStart", function () {
+		shouldUpdate = false;
+	});
+	updateErrors();
 }]);

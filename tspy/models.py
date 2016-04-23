@@ -42,6 +42,26 @@ class Message(db.Model):
         d["date"] = d["date"].strftime("%Y-%m-%d %H:%M:%S")
         return d
 
+class Error(db.Model):
+    __tablename__ = "errors"
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime)
+    error_msg = db.Column(db.String())
+    exception = db.Column(db.String())
+    traceback = db.Column(db.String())
+
+    def __init__(self, error_msg, exception, traceback):
+        self.error_msg = error_msg
+        self.exception = exception
+        self.traceback = traceback
+        self.date = datetime.now()
+
+    def as_dict(self):
+        d = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        d["date"] = d["date"].strftime("%Y-%m-%d %H:%M:%S")
+        return d
+
 class QueuedCommand(db.Model):
     __tablename__ = "queued_commands"
     id = db.Column(db.Integer, primary_key=True)

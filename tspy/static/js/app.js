@@ -18,6 +18,10 @@ tspyApp.config(['$routeProvider',
 				templateUrl: applySecret('partials/queue.html'),
 				controller: 'QueueCtrl'
 			}).
+			when('/errors', {
+				templateUrl: applySecret('partials/errors.html'),
+				controller: 'ErrorsCtrl'
+			}).
 			when('/', {
 				templateUrl: applySecret('partials/index.html'),
 			}).

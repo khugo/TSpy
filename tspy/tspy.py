@@ -20,7 +20,6 @@ from models import *
 def secret_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print(request.args)
         if "secret" in request.args and request.args["secret"] == config.ACCESS_PASSWORD:
             return f(*args, **kwargs)
         else:
@@ -46,6 +45,11 @@ def javascript_files(filename):
 def get_messages():
     return json.dumps([x.as_dict() for x in Message.query.order_by("date desc")])
 
+@app.route("/api/inspect/errors", methods=["GET"])
+@secret_required
+def get_errors():
+    return json.dumps([x.as_dict() for x in Error.query.order_by("date desc")])
+
 @app.route("/api/inspect/queue", methods=["GET"])
 @secret_required
 def get_queue():
@@ -56,7 +60,7 @@ def get_queue():
 def get_completed_queue():
     return json.dumps([x.as_dict() for x in QueuedCommand.query.filter_by(completed=True).order_by("-id").limit(50)])
 
-@app.route("/api/command", methods=["POST"])
+@app.route("/api/report/command", methods=["POST"])
 @secret_required
 def handle_command():
     header_str = request.form["header"]
@@ -66,6 +70,14 @@ def handle_command():
         header_bytes.append(int(byte).to_bytes(1, byteorder="little"))
     commands.handle_command(request.form["command"], header_bytes)
     return request.form["command"]
+
+@app.route("/api/report/error", methods=["POST"])
+@secret_required
+def handle_error():
+    e = Error(error_msg=request.form["error_msg"], exception=request.form["exception"], traceback=request.form["traceback"])
+    db.session.add(e)
+    db.session.commit()
+    return "OK", 200
 
 @app.route("/api/queue", methods=["GET"])
 @secret_required

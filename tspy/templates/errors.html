@@ -1,0 +1,15 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Message</th>
+      <th>Exception</th>
+      <th>Traceback</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="error in errors">
+      <td ng-repeat="(key, val) in error">{{val | angular}}</td>
+    </tr>
+  </tbody>
+</table>
