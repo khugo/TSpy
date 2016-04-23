@@ -10,7 +10,7 @@ DECRYPTED_PACKETS_BREAKPOINT = "*0x08238C2D"
 INBOUND_PACKETS_OUTPUT = "../inbound_packets.txt"
 #What the sendtextmessage packet's message should contain for it to be replaced
 TRIGGER_PACKET_CONTENT = "tspy"
-CONFIG_PATH = "tspy_config.json"
+CONFIG_PATH = "../tspy_config.json"
 
 def to_uint(x):
     return x & 0xffffffff
@@ -57,7 +57,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
 
     """
     def get_action_from_server(self):
-        url = "http://localhost:5000/api/queue?secret=" + self.config.password
+        url = "http://localhost:5000/api/queue?secret=" + self.config["password"]
         json_data = json.loads(urlopen(url).read().decode("utf-8"))
         print(json.dumps(json_data))
         return json_data
@@ -139,11 +139,11 @@ class TSpyBreakpoint(gdb.Breakpoint):
                         self.set_size(len(new_command)+13)
                     else:
                         data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config.password, data)).start()
+                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)).start()
         except Exception as e:
             traceback.print_exc()
             data = urlencode({"error_msg": str(e), "exception": type(e).__name__, "traceback": traceback.format_exc()}).encode("utf-8")
-            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + self.config.password, data)).start()
+            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + self.config["password"], data)).start()
 
 class LogInboundPackets(gdb.Command):
     def __init__ (self):
