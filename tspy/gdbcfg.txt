@@ -1,5 +1,5 @@
 set pagination off
-source ../script.py
+source ../tspy_gdb.py
 file ts3server_linux_x86
 ow
 run
