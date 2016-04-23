@@ -9,6 +9,7 @@ DECRYPTED_PACKETS_BREAKPOINT = "*0x08238C2D"
 INBOUND_PACKETS_OUTPUT = "../inbound_packets.txt"
 #What the sendtextmessage packet's message should contain for it to be replaced
 TRIGGER_PACKET_CONTENT = "tspy"
+ACCESS_PASSWORD = "password"
 
 def to_uint(x):
     return x & 0xffffffff
@@ -51,7 +52,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
 
     """
     def get_action_from_server(self):
-        url = "http://localhost:5000/api/queue"
+        url = "http://localhost:5000/api/queue?secret=" + ACCESS_PASSWORD
         json_data = json.loads(urlopen(url).read().decode("utf-8"))
         print(json.dumps(json_data))
         return json_data
@@ -128,7 +129,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
                     self.set_size(len(new_command)+13)
                 else:
                     data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                    threading.Thread(target=urlopen, args=("http://localhost:5000/api/command", data)).start()
+                    threading.Thread(target=urlopen, args=("http://localhost:5000/api/command?secret=" + ACCESS_PASSWORD, data)).start()
 
 class LogInboundPackets(gdb.Command):
     def __init__ (self):
@@ -150,5 +151,4 @@ class TSpy(gdb.Command):
         """)
         print("Overwriting commands at " + DECRYPTED_PACKETS_BREAKPOINT)
 
-#LogInboundPackets()
 TSpy()

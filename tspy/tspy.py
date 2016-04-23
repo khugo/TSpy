@@ -20,7 +20,6 @@ from models import *
 def secret_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print(request.args)
         if "secret" in request.args and request.args["secret"] == config.ACCESS_PASSWORD:
             return f(*args, **kwargs)
         else:
