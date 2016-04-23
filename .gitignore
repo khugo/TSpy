@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 *~
 .sass-cache
+tspy_config.json

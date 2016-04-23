@@ -10,10 +10,14 @@ DECRYPTED_PACKETS_BREAKPOINT = "*0x08238C2D"
 INBOUND_PACKETS_OUTPUT = "../inbound_packets.txt"
 #What the sendtextmessage packet's message should contain for it to be replaced
 TRIGGER_PACKET_CONTENT = "tspy"
-ACCESS_PASSWORD = "password"
+CONFIG_PATH = "tspy_config.json"
 
 def to_uint(x):
     return x & 0xffffffff
+
+def load_config():
+    with open(CONFIG_PATH, "r") as f:
+        return json.loads(f.read())
 
 class DecryptedBreakpoint(gdb.Breakpoint):
     def stop(self):
@@ -53,7 +57,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
 
     """
     def get_action_from_server(self):
-        url = "http://localhost:5000/api/queue?secret=" + ACCESS_PASSWORD
+        url = "http://localhost:5000/api/queue?secret=" + self.config.password
         json_data = json.loads(urlopen(url).read().decode("utf-8"))
         print(json.dumps(json_data))
         return json_data
@@ -78,7 +82,10 @@ class TSpyBreakpoint(gdb.Breakpoint):
             try:
                 command += b.decode("utf-8")
             except UnicodeDecodeError:
-                print("Failed to decode " + str(int.from_bytes(b, "little")))
+                byte = hex(int.from_bytes(b, "little"))
+                command += byte #add as raw hex encoded byte
+                print("Failed to decode " + byte)
+
         return command
     def read_size(self):
         return int.from_bytes(self.inferior.read_memory(self.data_size_addr, 4), "little") - 13
@@ -106,6 +113,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
     """
     def stop(self):
         try:
+            self.config = load_config()
             self.inferior = gdb.selected_inferior()
             data_ptr_addr = to_uint(int(gdb.parse_and_eval("$esi+4")))
             #data_addr + 13 = start of command message
@@ -131,11 +139,11 @@ class TSpyBreakpoint(gdb.Breakpoint):
                         self.set_size(len(new_command)+13)
                     else:
                         data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + ACCESS_PASSWORD, data)).start()
+                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config.password, data)).start()
         except Exception as e:
             traceback.print_exc()
             data = urlencode({"error_msg": str(e), "exception": type(e).__name__, "traceback": traceback.format_exc()}).encode("utf-8")
-            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + ACCESS_PASSWORD, data)).start()
+            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + self.config.password, data)).start()
 
 class LogInboundPackets(gdb.Command):
     def __init__ (self):
