@@ -116,11 +116,15 @@ class TSpyBreakpoint(gdb.Breakpoint):
                 if self.config["log_packets"]:
                     self.log_packet(command)
                 data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)).start()
+                urlopen("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)
         except Exception as e:
             traceback.print_exc()
             data = urlencode({"error_msg": str(e), "exception": type(e).__name__, "traceback": traceback.format_exc()}).encode("utf-8")
-            threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + self.config["password"], data)).start()
+            try:
+                urlopen("http://localhost:5000/api/report/error?secret=" + self.config["password"], data)
+            except Exception as e:
+                print("Got Exception while trying to report error to server.")
+                traceback.print_exc()
 
 class TSpy(gdb.Command):
     def __init__(self):
