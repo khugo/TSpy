@@ -79,7 +79,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
     def set_size(self, size):
         self.inferior.write_memory(self.data_size_addr, bytes((size,)))
     def log_packet(self, command):
-        output = header_to_packet() + "\t" + command
+        output = self.header_to_packet() + "\t" + command
         with open(self.config["packet_logs_path"], "a+") as f:
             f.write(output)
             f.write("\n\n")
