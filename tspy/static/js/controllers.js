@@ -9,6 +9,8 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", "$sanitize", func
 				return "CHANNEL";
 			case 3:
 				return "SERVER";
+			case 4:
+				return "POKE";
 			default:
 				return "UNKNOWN (" + mode + ")";
 		}
