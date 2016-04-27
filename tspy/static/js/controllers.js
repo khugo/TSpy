@@ -39,7 +39,7 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", "$sanitize", func
 	});
 	update();
 	$scope.formatMsg = function (msg) {
-		var re = /\[URL\](.*)\[\/URL\]/;
+		var re = /\[URL\](.*)\[\/URL\]/g;
 		//Replace [URL]link[/URL]
 		if (re.exec(msg)) {
 			msg = msg.replace(re, '<a href="' + re.exec(msg)[1] + '" target="_blank">' + re.exec(msg)[1] + "</a>");
