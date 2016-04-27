@@ -80,7 +80,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
         self.inferior.write_memory(self.data_size_addr, bytes((size,)))
     def log_packet(self, command):
         output = header_to_packet() + "\t" + command
-        with open(config.packet_logs_path, "a+") as f:
+        with open(self.config["packet_logs_path"], "a+") as f:
             f.write(output)
             f.write("\n\n")
 
@@ -103,7 +103,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
                     if not msg:
                         raise Exception("Couldn't find msg in sendtextmessage: " + command)
                     #If this is a special packet, get what the server wants to do and replace memory accordingly
-                    if msg.group(1) == self.config.trigger_packet_content:
+                    if msg.group(1) == self.config["trigger_packet_content"]:
                         server_action = self.get_action_from_server()
                         if server_action["command"] != "":
                             self.apply_server_action(server_action)
@@ -113,7 +113,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
                         new_command = "sendtextmessage targetmode=2 msg=" + str(int.from_bytes(self.inferior.read_memory(self.data_addr+11, 1), "little"))
                         self.set_command(new_command)
                         self.set_size(len(new_command)+13)
-                if config.log_packets:
+                if self.config["log_packets"]:
                     self.log_packet(command)
                 data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
                 threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)).start()
