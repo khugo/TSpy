@@ -1,5 +1,6 @@
 var tspyApp = angular.module('tspyApp', [
   'ngRoute',
+  "ngSanitize",
   'tspyControllers'
 ]);
 

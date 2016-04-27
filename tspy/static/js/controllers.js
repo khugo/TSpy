@@ -1,6 +1,6 @@
 var tspyControllers = angular.module('tspyControllers', []);
 
-tspyControllers.controller('MessagesCtrl', ["$scope", "$http", function ($scope, $http) {
+tspyControllers.controller('MessagesCtrl', ["$scope", "$http", "$sanitize", function ($scope, $http, $sanitize) {
 	function parseTargetmode(mode) {
 		switch (mode) {
 			case 1:
@@ -14,7 +14,6 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", function ($scope,
 		}
 	}
 	function update() {
-		console.log("update");
 		$http.get("api/inspect/messages?secret=" + localStorage.getItem("secret")).success(function (data) {
 			var messages = data.map(function (x) {
 				return {
@@ -39,6 +38,14 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", function ($scope,
 		shouldUpdate = false;
 	});
 	update();
+	$scope.formatMsg = function (msg) {
+		var re = /\[URL\](.*)\[\/URL\]/;
+		//Replace [URL]link[/URL]
+		if (re.exec(msg)) {
+			msg = msg.replace(re, '<a href="' + re.exec(msg)[1] + '" target="_blank">' + re.exec(msg)[1] + "</a>");
+		}
+		return msg;
+	}
 }]);
 tspyControllers.controller('NavbarCtrl', ["$location", "$scope", function ($location, $scope) {
 	$scope.isActive = function (viewLocation) { 

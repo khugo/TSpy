@@ -43,12 +43,12 @@ def javascript_files(filename):
 @app.route("/api/inspect/messages", methods=["GET"])
 @secret_required
 def get_messages():
-    return json.dumps([x.as_dict() for x in Message.query.order_by("date desc").limit(50)])
+    return json.dumps([x.as_dict() for x in Message.query.order_by("date desc").limit(150)])
 
 @app.route("/api/inspect/errors", methods=["GET"])
 @secret_required
 def get_errors():
-    return json.dumps([x.as_dict() for x in Error.query.order_by("date desc").limit(50)])
+    return json.dumps([x.as_dict() for x in Error.query.order_by("date desc").limit(150)])
 
 @app.route("/api/inspect/queue", methods=["GET"])
 @secret_required
@@ -58,7 +58,7 @@ def get_queue():
 @app.route("/api/inspect/queue/completed", methods=["GET"])
 @secret_required
 def get_completed_queue():
-    return json.dumps([x.as_dict() for x in QueuedCommand.query.filter_by(completed=True).order_by("-id").limit(50)])
+    return json.dumps([x.as_dict() for x in QueuedCommand.query.filter_by(completed=True).order_by("-id").limit(150)])
 
 @app.route("/api/report/command", methods=["POST"])
 @secret_required

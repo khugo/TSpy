@@ -9,8 +9,12 @@
     </tr>
   </thead>
   <tbody>
+  {% raw %}
     <tr ng-repeat="msg in messages">
-      <td ng-repeat="(key, val) in msg">{{val | angular}}</td>
+      <td ng-repeat="(key, val) in msg">
+        <span ng-bind-html="formatMsg(val)"></span>
+      </td>
     </tr>
+  {% endraw %}
   </tbody>
 </table>
