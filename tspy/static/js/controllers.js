@@ -14,7 +14,7 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", "$sanitize", func
 		}
 	}
 	function update() {
-		$http.get("api/inspect/messages?secret=" + localStorage.getItem("secret")).success(function (data) {
+		$http.get("api/inspect/messages").success(function (data) {
 			var messages = data.map(function (x) {
 				return {
 					date: x.date,
@@ -58,7 +58,7 @@ tspyControllers.controller('NavbarCtrl', ["$location", "$scope", function ($loca
 tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $http) {
 	function updateQueue() {
 		var completedTasks = 0;
-		$http.get("api/inspect/queue?secret=" + localStorage.getItem("secret")).success(function (data) {
+		$http.get("api/inspect/queue").success(function (data) {
 			var commands = data.map(function (x) {
 				return {
 					id: x.id,
@@ -74,7 +74,7 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 					updateQueue();
 				}, 1000);
 		});
-		$http.get("api/inspect/queue/completed?secret=" + localStorage.getItem("secret")).success(function (data) {
+		$http.get("api/inspect/queue/completed").success(function (data) {
 			var commands = data.map(function (x) {
 				return {
 					id: x.id,
@@ -99,7 +99,7 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 		console.log($.param($scope.formData));
 		$http({
 			method: "POST",
-			url: "api/queue?secret=" + localStorage.getItem("secret"),
+			url: "api/queue",
 			data: $.param($scope.formData),
 			headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  
 		}).success(function () {
@@ -110,7 +110,7 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 		console.log($.param({id:id}))
 		$http({
 			method: "POST",
-			url: "api/queue/delete?secret=" + localStorage.getItem("secret"),
+			url: "api/queue/delete",
 			data: "id=" + id,
 			headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  
 		})
@@ -137,7 +137,7 @@ tspyControllers.controller("QueueCtrl", ["$scope", "$http", function ($scope, $h
 
 tspyControllers.controller('ErrorsCtrl', ["$scope", "$http", function ($scope, $http) {
 	function updateErrors() {
-		$http.get("api/inspect/errors?secret=" + localStorage.getItem("secret")).success(function (data) {
+		$http.get("api/inspect/errors").success(function (data) {
 			var errors = data.map(function (x) {
 				return {
 					date: x.date,

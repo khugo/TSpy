@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, jsonify, request, redirect, send_from_directory
+from flask import Flask, render_template, jsonify, request, redirect, send_from_directory, make_response
 from flask.ext.triangle import Triangle
 from flask.ext.sqlalchemy import SQLAlchemy
 from contextlib import closing
@@ -20,21 +20,30 @@ from models import *
 def secret_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "secret" in request.args and request.args["secret"] == config.ACCESS_PASSWORD:
+        #Support both query param (for gdb script) and cookies (browser)
+        if "secret" in request.cookies and request.cookies["secret"] == config.ACCESS_PASSWORD:
+            return f(*args, **kwargs)
+        elif "secret" in request.args and request.args["secret"] == config.ACCESS_PASSWORD:
             return f(*args, **kwargs)
         else:
             return "", 404
     return decorated_function
 
 @app.route("/")
-@secret_required
 def index():
-    return render_template("base.html", secret=config.ACCESS_PASSWORD)
+    #If we have secret in query params set it as cookie and redirect back to this
+    if "secret" in request.args and request.args["secret"] == config.ACCESS_PASSWORD:
+        response = make_response(redirect("/"))
+        response.set_cookie("secret", request.args["secret"])
+        return response
+    elif "secret" in request.cookies and request.cookies["secret"] == config.ACCESS_PASSWORD:
+        return render_template("base.html", secret=config.ACCESS_PASSWORD)
+    else:
+        return "", 404
 
 @app.route("/static/js/<path:filename>")
 @secret_required
 def javascript_files(filename):
-    print(os.path.join(app.root_path, "static/js"))
     return send_from_directory(
         os.path.join(app.root_path, "static/js"),
         filename
