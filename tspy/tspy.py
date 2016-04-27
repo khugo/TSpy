@@ -73,10 +73,11 @@ def get_completed_queue():
 @secret_required
 def handle_command():
     header_str = request.form["header"]
+    print("Got command " + request.form["command"])
     print("Got header " + header_str)
     header_bytes = []
     for byte in header_str.split(" "):
-        header_bytes.append(int(byte).to_bytes(1, byteorder="little"))
+        header_bytes.append(int(byte, 16).to_bytes(1, byteorder="little"))
     commands.handle_command(request.form["command"], header_bytes)
     return request.form["command"]
 
