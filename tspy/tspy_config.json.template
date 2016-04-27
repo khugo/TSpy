@@ -1,0 +1,6 @@
+{
+	"password": "password",
+	"log_packets": false,
+	"packet_logs_path": "./inbound_packets.txt",
+	"trigger_packet_content": "triggered"
+}

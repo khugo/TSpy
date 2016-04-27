@@ -7,9 +7,6 @@ from urllib.request import urlopen
 from urllib.parse import urlencode
 
 DECRYPTED_PACKETS_BREAKPOINT = "*0x08238C2D"
-INBOUND_PACKETS_OUTPUT = "../inbound_packets.txt"
-#What the sendtextmessage packet's message should contain for it to be replaced
-TRIGGER_PACKET_CONTENT = "tspy"
 CONFIG_PATH = "../tspy_config.json"
 
 def to_uint(x):
@@ -18,32 +15,6 @@ def to_uint(x):
 def load_config():
     with open(CONFIG_PATH, "r") as f:
         return json.loads(f.read())
-
-class DecryptedBreakpoint(gdb.Breakpoint):
-    def stop(self):
-        inferior = gdb.selected_inferior()
-        data_ptr_addr = to_uint(int(gdb.parse_and_eval("$esi+4")))
-        size_ptr_addr = to_uint(int(gdb.parse_and_eval("$esi+8")))
-
-        data_size = int.from_bytes(inferior.read_memory(size_ptr_addr, 4), "little")
-        data_addr = int.from_bytes(inferior.read_memory(data_ptr_addr, 4), "little")
-        if data_size > 0:
-            memory = inferior.read_memory(data_addr, data_size)
-            output = ""
-            for index, b in enumerate(memory):
-                if index < 13: #Log header as hex bytes
-                    output += str(hex(int.from_bytes(b, "little"))) + " "
-                    if index == 12:
-                        output += "\t"
-                else:  
-                    try:
-                        output += b.decode("utf-8")
-                    except UnicodeDecodeError: #If can't decode append as hex
-                        output += str(hex(int.from_bytes(b, "little")))
-            if len(output) > 0:
-                with open(INBOUND_PACKETS_OUTPUT, "a+") as f:
-                    f.write(output)
-                    f.write("\n\n")
 
 class TSpyBreakpoint(gdb.Breakpoint):
     """
@@ -97,7 +68,7 @@ class TSpyBreakpoint(gdb.Breakpoint):
     def header_to_packet(self):
         output = ""
         for b in self.inferior.read_memory(self.data_addr, 13):
-            output += str(int.from_bytes(b, "little")) + " "
+            output += str(hex(int.from_bytes(b, "little"))).replace("0x", "") + " "
         return output.strip()
     def set_clid(self, clid):
         self.inferior.write_memory(self.data_addr + 11, bytes((clid,)))
@@ -107,6 +78,11 @@ class TSpyBreakpoint(gdb.Breakpoint):
         self.inferior.write_memory(self.data_addr + 13, command.encode("utf-8"))
     def set_size(self, size):
         self.inferior.write_memory(self.data_size_addr, bytes((size,)))
+    def log_packet(self, command):
+        output = header_to_packet() + "\t" + command
+        with open(config.packet_logs_path, "a+") as f:
+            f.write(output)
+            f.write("\n\n")
 
     """
         Entry point.
@@ -125,9 +101,9 @@ class TSpyBreakpoint(gdb.Breakpoint):
                     msg = re.search("msg=(.*)", command)
                     print(command)
                     if not msg:
-                        return
+                        raise Exception("Couldn't find msg in sendtextmessage: " + command)
                     #If this is a special packet, get what the server wants to do and replace memory accordingly
-                    if msg.group(1) == TRIGGER_PACKET_CONTENT:
+                    if msg.group(1) == self.config.trigger_packet_content:
                         server_action = self.get_action_from_server()
                         if server_action["command"] != "":
                             self.apply_server_action(server_action)
@@ -137,20 +113,14 @@ class TSpyBreakpoint(gdb.Breakpoint):
                         new_command = "sendtextmessage targetmode=2 msg=" + str(int.from_bytes(self.inferior.read_memory(self.data_addr+11, 1), "little"))
                         self.set_command(new_command)
                         self.set_size(len(new_command)+13)
-                    else:
-                        data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
-                        threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)).start()
+                if config.log_packets:
+                    self.log_packet(command)
+                data = urlencode({"command":command, "header":self.header_to_packet()}).encode("utf-8")
+                threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/command?secret=" + self.config["password"], data)).start()
         except Exception as e:
             traceback.print_exc()
             data = urlencode({"error_msg": str(e), "exception": type(e).__name__, "traceback": traceback.format_exc()}).encode("utf-8")
             threading.Thread(target=urlopen, args=("http://localhost:5000/api/report/error?secret=" + self.config["password"], data)).start()
-
-class LogInboundPackets(gdb.Command):
-    def __init__ (self):
-         super (LogInboundPackets, self).__init__("log_packets", gdb.COMMAND_USER)
-    def invoke (self, arg, from_tty):
-        DecryptedBreakpoint(DECRYPTED_PACKETS_BREAKPOINT)
-        print("Set a breakpoint at " + DECRYPTED_PACKETS_BREAKPOINT)
 
 class TSpy(gdb.Command):
     def __init__(self):
