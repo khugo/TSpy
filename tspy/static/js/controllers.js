@@ -41,10 +41,15 @@ tspyControllers.controller('MessagesCtrl', ["$scope", "$http", "$sanitize", func
 	});
 	update();
 	$scope.formatMsg = function (msg) {
-		var re = /\[URL\](.*)\[\/URL\]/g;
-		//Replace [URL]link[/URL]
-		if (re.exec(msg)) {
-			msg = msg.replace(re, '<a href="' + re.exec(msg)[1] + '" target="_blank">' + re.exec(msg)[1] + "</a>");
+		if (!msg) return "";
+		msg = msg.toString();
+		//First find all the urls, then loop through them and replace each one with an anchor
+		var tsUrls = msg.match(/\[URL\](.*?)\[\/URL\]/g);
+		if (tsUrls) {
+			tsUrls.forEach(function (string) {
+				var url = /\[URL\](.*?)\[\/URL\]/.exec(string)[1];
+				msg = msg.replace(string, '<a href="' + url + '" target="_blank">' + url + '</a>');
+			});
 		}
 		return msg;
 	}
