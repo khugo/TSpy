@@ -6,6 +6,7 @@ from contextlib import closing
 import config
 import json
 import os
+import traceback
 from functools import wraps
 
 app = Flask(__name__)
@@ -72,14 +73,18 @@ def get_completed_queue():
 @app.route("/api/report/command", methods=["POST"])
 @secret_required
 def handle_command():
-    header_str = request.form["header"]
-    print("Got command " + request.form["command"])
-    print("Got header " + header_str)
-    header_bytes = []
-    for byte in header_str.split(" "):
-        header_bytes.append(int(byte, 16).to_bytes(1, byteorder="little"))
-    commands.handle_command(request.form["command"], header_bytes)
-    return request.form["command"]
+    try:
+        header_str = request.form["header"]
+        print("Got command " + request.form["command"])
+        print("Got header " + header_str)
+        header_bytes = []
+        for byte in header_str.split(" "):
+            header_bytes.append(int(byte, 16).to_bytes(1, byteorder="little"))
+        commands.handle_command(request.form["command"], header_bytes)
+    except Exception as e:
+        traceback.print_exc()
+        return traceback.format_exc(), 500
+    return request.form["command"], 200
 
 @app.route("/api/report/error", methods=["POST"])
 @secret_required
