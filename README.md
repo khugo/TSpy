@@ -13,3 +13,7 @@ TSpy provides a web interface written in Flask and AngularJS that allows viewing
 ## Why? ##
 
 I wanted to prove that it is realistically possible for a public server to be modified in such a way that it is not safe for its users and that we shouldn't blindly trust these server providers.
+
+## Project structure ##
+
+All the code related to the interaction with the TeamSpeak server executable is contained in the Python GDB script `tspy_gdb.py`. Everything else is related to either running the server or to the web interface.
