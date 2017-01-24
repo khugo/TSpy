@@ -2,8 +2,6 @@
 
 **This project was only created as a proof of concept, please do not abuse it.**
 
-*This repository was moved from bitbucket to github so the older commits show the wrong username.*
-
 ## What? ##
 
 TSpy is a program for hooking into the TeamSpeak 3 server executable. It allows the server owner to read and modify private messages and pokes by setting a breakpoint using GDB at the address where the TeamSpeaks command packets are decrypted and then reading/modifying the packet data.
