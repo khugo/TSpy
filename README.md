@@ -17,3 +17,7 @@ I wanted to prove that it is realistically possible for a public server to be mo
 ## Project structure ##
 
 All the code related to the interaction with the TeamSpeak server executable is contained in the Python GDB script `tspy_gdb.py`. Everything else is related to either running the server or to the web interface.
+
+### TeamSpeak version used
+
+TeamSpeak 3 Server 3.0.11.4 (2015-08-18 13:30:34)
